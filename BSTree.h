@@ -15,10 +15,13 @@ private:
 			KeyComparable key;
 			Value value;
 						
-			//Initialize class members from constructor arguments 
-			//by using a member initializer list.
-			//This method uses direct initialization, which is more
-			//efficient than using assignment operators inside the constructor body.
+			////
+			// Initialize class members from constructor arguments by using a 
+			// member initializer list. This method uses direct initialization,
+			// which is more efficient than using assignment operators inside 
+			// the constructor body.
+			////
+
 			Pair( KeyComparable & key, Value & value )
 				: value{ value },  key{ key }
 			{
@@ -35,7 +38,7 @@ private:
 	Pair **root = new Pair*[size];
 		
 	/*
-	* Prints the data of the trea in order based on the key to the output stream
+	* Prints the data of the trea in order based on key to the output stream
 	*/
 	void printTree(int index, std::ostream & out) const {
 		//  stub code: needs to be implemented
