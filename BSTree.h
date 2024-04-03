@@ -77,6 +77,46 @@ private:
 
 		return nullptr;
 	}
+
+	void remove(int index) {
+		/*
+		*deletes itself, and calls itself for their
+		* children. must keep in mind it will be creating duplicates
+		* needs to find the direct sucessor/predecessor first
+		* function is "dumb"; assumes the index actually exists
+		*/
+
+
+
+		//DETERMINE INDEX LOCATION OF sucessor
+		int maxLeft = index*2; //max of left subtree
+		int minRight = (index*2)+1; //left subtree
+
+		//check if branches exist
+		if(root[index*2] != nullptr) { findMax(int maxLeft); }
+		if(root[(index * 2) + 1] != nullptr) { findMin(int minRight); }
+		
+		//we now have the locations of the direct sucessor maybe idk
+
+
+
+
+
+	}
+
+	const Pair* findMin(int index) {
+		//helper private to find minimum of a tree
+		if (root[index * 2] == nullptr) { return root[index]; }
+		index = index * 2;
+		return findMin(index * 2 ); //go a level deeper
+	}
+
+	const Pair* findMax(int index) {
+		//helper private to find max of a tree
+		if (root[(index * 2)+1] == nullptr) { return root[index]; }
+		index = (index * 2) + 1;
+		return findMax((index * 2) + 1 ); //go a level deeper
+	}
 	
 public:
 	BinarySearchTree() 	{
@@ -91,7 +131,6 @@ public:
 	* Finds the node with the smallest element in the tree	
 	*/
 	const Value findMin() const {
-		//  stub code: needs to be implemented
 		return nullptr;
 	}
 
@@ -168,8 +207,17 @@ public:
 	*/
 	void remove(const KeyComparable & key) 	{
 		//PHASE 1: Identify a match
+		int index = 1;
+		if (find(const KeyComparable & key, int index const) == nullptr) {
+			return; //no match
+		}
 
-		int match = 1; //set to 1 to start at root
+		//we now have a match and it's direct index
+		//we need to enumerate the parent, enumerate the children
+		//then we need to "promote" the children after killing the specific
+		// node
+
+		remove(index);
 
 
 	}
