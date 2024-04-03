@@ -34,14 +34,48 @@ private:
 	int count = 0;
 	// capacity of array holding the tree
 	int size = 25;
-	// the array that holds the pairs
-	Pair **root = new Pair*[size];
+
+	/*
+	* The array that holds the pairs.
+	* 
+	* NOTE TO SELF: the first pointer is to dynamic memory where the array 
+	* lives. The second pointer points to the start of the C array.
+	*/
+
+	Pair* *root = new Pair*[size];
 		
 	/*
 	* Prints the data of the trea in order based on key to the output stream
 	*/
+
 	void printTree(int index, std::ostream & out) const {
 		//  stub code: needs to be implemented
+	}
+
+	Pair* find(const KeyComparable& key, int index const) {
+		//Internal function to find a pair
+		if (key == root[index]->key) { return root[index]; } //if a match
+
+		if (key > root[index]->key) {
+			if (root[index*2]) { //check left
+				index = index * 2; //set to left
+				return find(key, index); //call itself again
+			}
+		}
+
+		if (key < root[index]->key) { //check right
+			if (root[(index * 2) + 1]) {
+				index = (index * 2) + 1; // set to right
+				return find(key, index);
+			}
+		}
+
+		////
+		// When here: if node has a value, and the value is greater or less 
+		// than all other values, we can then take node and use that for insert
+		////
+
+		return nullptr;
 	}
 	
 public:
@@ -77,6 +111,7 @@ public:
 	*/
 	bool find(const KeyComparable & argKey , Value & founditem) const 	{
 		//  stub code: needs to be implemented
+
 		return false;
 	}
 
@@ -84,7 +119,6 @@ public:
 	* Returns true if the item is found in the tree
 	*/
 	bool contains(const KeyComparable & argKey) const {
-		//  stub code: needs to be implemented
 		return false;
 	}
 
@@ -124,9 +158,14 @@ public:
 
 	/*
 	* Removes the nodes if it contains the given item
+	* Start at root.
 	*/
 	void remove(const KeyComparable & key) 	{
-		//  stub code: needs to be implemented
+		//PHASE 1: Identify a match
+
+		int match = 1; //set to 1 to start at root
+
+
 	}
 
 	int getSize() {
