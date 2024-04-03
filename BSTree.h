@@ -110,9 +110,15 @@ public:
 	* returns false if it was not 
 	*/
 	bool find(const KeyComparable & argKey , Value & founditem) const 	{
-		//  stub code: needs to be implemented
+		int index = 1;
+	
+		if (find(const KeyComparable & key, int index const) == nullptr) {
+			return false; 
+		}
+		
+		founditem = root[index]->value; //We have a match, store it.
 
-		return false;
+		return true;
 	}
 
 	/*
