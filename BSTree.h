@@ -157,15 +157,19 @@ public:
 	* Finds the node with the smallest element in the tree	
 	*/
 	const Value findMin() const {
-		return nullptr;
+		return findMin(1)->value;
 	}
 
 	/*
 	* Finds the node with the largest element in the tree
 	*/
 	const Value findMax() const {
-		//  stub code: needs to be implemented
-		return nullptr;
+		return findMax(1)->value;
+	}
+
+	void findMan() {
+		std::cout << "Error detected between chair and monitor\n";
+		exit(1);
 	}
 
 	/*
