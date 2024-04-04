@@ -1,6 +1,7 @@
 #include "BSTInterface.h"
 #include <string>
 
+
 using namespace std;
 template <typename KeyComparable, typename Value >
 class BinarySearchTree : BSTInterface < KeyComparable, Value >
@@ -117,6 +118,31 @@ private:
 		index = (index * 2) + 1;
 		return findMax((index * 2) + 1 ); //go a level deeper
 	}
+
+	int navigate(int index, int count, bool deleteNodes) {
+		//recursively navigate to bottom of tree, incrementing an index
+		//returns number of valid nodes encountered
+		//deletion flag deletes the child node before returning
+		//assumes tree is not empty
+		
+		count++; //we are here already, must be a valid node
+
+
+		//check if children exist, then count *their* subtrees, report back.
+		if (root[index * 2] != nullptr) {
+			this->count += navigate(index * 2, count, deleteNodes);
+		}
+		if (root[(index * 2) + 1] != nullptr) { 
+			this->count += navigate((index * 2) + 1, count, deleteNodes);
+		}
+
+
+
+		if (deleteNode) { delete root[index]; } //delete before we leave
+
+		return count; //ascend the total count to main or recursive parent
+
+	}
 	
 public:
 	BinarySearchTree() 	{
@@ -187,7 +213,12 @@ public:
 	* Removes all nodes from the tree
 	*/
 	void makeEmpty() {
-		//  stub code: needs to be implemented
+		int index = 1;
+		this->count = 1; //set count to be extra sure
+		if (isEmpty()) { return; }
+
+		navigate(index, this->count, true);
+		this->count = 0;
 	}
 
 	/*
@@ -223,13 +254,39 @@ public:
 	}
 
 	int getSize() {
-		//  stub code: needs to be implemented
-		return 0;
+		return this->size;
+	}
+	bool checkCount() {
+		//false means size was incorrect, but has been fixed
+		//true means size matched.
+
+		//a double false means something is wrong!
+
+		int index = 1;
+		if (isEmpty && count != 0) {
+			count = 0;
+			return false;
+		}
+		else if (isEmpty) {
+			return true;
+		}
+
+
+		int ourCount = 1; //we're not empty
+
+		ourCount = navigate(index, ourCount, false); //update our count
+		if (this->count == ourCount) {
+			return true;
+		}
+
+		this->count = ourCount;
+		return false;
 	}
 
 	int getCount() {
-		//  stub code: needs to be implemented
-		return 0;
+		return this->count;
 	}
+
+
 
 };	// end of BinarySearchTree class
