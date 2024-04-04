@@ -15,7 +15,7 @@ private:
 		public:
 			KeyComparable key;
 			Value value;
-						
+			int depth; //used for traversal
 			////
 			// Initialize class members from constructor arguments by using a 
 			// member initializer list. This method uses direct initialization,
@@ -24,7 +24,7 @@ private:
 			////
 
 			Pair( KeyComparable & key, Value & value )
-				: value{ value },  key{ key }
+				: value{ value },  key{ key }, depth{ 0 }
 			{
 				// empty constructor...member initializer is doing all the work
 			}
@@ -35,6 +35,7 @@ private:
 	int count = 0;
 	// capacity of array holding the tree
 	int size = 25;
+	int height = 0; //height of the tree before initialzing
 
 	/*
 	* The array that holds the pairs.
@@ -106,12 +107,34 @@ private:
 	}
 
 	const Pair* findMin(int index) {
-		//helper private to find minimum of a tree
+		//helper private to find minimum of a tree recursively
 		if (root[index * 2] == nullptr) { return root[index]; }
 		index = index * 2;
 		return findMin(index * 2 ); //go a level deeper
 	}
 
+	const Pair* findPredecessor(int index) {
+		/*
+		* proof of concept that uses the hashmap-like structure of array BST
+		* 
+		* Since this is tricky here is an explanation of the patterns: 
+		* 1. The depth of the tree signifies the power of 2 that each layer has
+		* in common
+		* 2. In a layer, the corresponding max "index" for each leaf is 2^depth
+		* 
+		* These properties creates a line of symmetry at the root node for the
+		* tree or subtree between the predesessor/sucessor, this can be used to
+		* find the predecessor with less recursion.
+		* 
+		* If the node that would be the immediate precesssor/sucesssor is empty
+		* , then we need to ascend a level to test the line of symmetry there
+		* 
+		*/
+
+		//First, determine the depth
+
+	}
+	
 	const Pair* findMax(int index) {
 		//helper private to find max of a tree
 		if (root[(index * 2)+1] == nullptr) { return root[index]; }
@@ -143,6 +166,12 @@ private:
 		return count; //ascend the total count to main or recursive parent
 
 	}
+
+	void lateralNavigate(int layer) {
+		//proof of concept to navigate across the same level
+		//assumes it starts on the very left side
+		int anticipatedLeaves = 
+	}
 	
 public:
 	BinarySearchTree() 	{
@@ -150,7 +179,7 @@ public:
 	}
 	
 	~BinarySearchTree() {
-		//  stub code: needs to be implemented
+		makeEmpty();
 	}
 
 	/*
