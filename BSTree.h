@@ -113,14 +113,25 @@ private:
 		return findMin(index * 2 ); //go a level deeper
 	}
 
-	const Pair* findPredecessor(int index) {
+	const Pair* findPredecessor(int index, Pair& sucessor,
+		int localHeight = -1) {
 		/*
 		* proof of concept that uses the hashmap-like structure of array BST
+		* finds the direct sucessor/predecessor to a given node
+		* sucessor will get assigned to the direct sucessor
+		* 
+		* if the function returns the same address contained at index, there is
+		* no predecessor
+		* 
+		* sucessor expects to be set to root on initial run
 		* 
 		* Since this is tricky here is an explanation of the patterns: 
 		* 1. The depth of the tree signifies the power of 2 that each layer has
 		* in common
-		* 2. In a layer, the corresponding max "index" for each leaf is 2^depth
+		* 2. In a layer, the corresponding window for each leaf is 2^(depth)
+		* This can be extrapolated locally:
+		* 
+		* 3. Each subtree has a "window" of 2^(depth) * index
 		* 
 		* These properties creates a line of symmetry at the root node for the
 		* tree or subtree between the predesessor/sucessor, this can be used to
@@ -129,9 +140,32 @@ private:
 		* If the node that would be the immediate precesssor/sucesssor is empty
 		* , then we need to ascend a level to test the line of symmetry there
 		* 
+		* 
+		*
 		*/
 
-		//First, determine the depth
+		//First, determine the depth of the(sub)tree.
+		//The variable should be correct here
+		if (localHeight == -1) { //if this wasnt overridden
+			localHeight = this->height - root[index].depth;
+		}
+		int localMin = this->index * pow(2, localHeight - 1);
+		//any higher and it rolls over to the next local min, so using this:
+		int localMax = localMin + pow(2, localHeight - 1) - 1; 
+
+		//we now have the essentials to have the computer visualize the subtree
+		//we need to test the axis of symmetry for the lowest level and rise
+
+		if (root[localMax] == nullptr) { //check end
+			findPredecessor(index, sucessor, (localHeight - 1) );
+		}
+		//the local max does exist WAIT SHIT DAMNIT I WAS DOING IT WRONG
+
+
+
+		if (root[localMin] == nullptr) {
+			return findPredecessor(index, sucessor, (localHeight - 1));
+		}
 
 	}
 	
@@ -170,7 +204,7 @@ private:
 	void lateralNavigate(int layer) {
 		//proof of concept to navigate across the same level
 		//assumes it starts on the very left side
-		int anticipatedLeaves = 
+		//int anticipatedLeaves = 
 	}
 	
 public:
