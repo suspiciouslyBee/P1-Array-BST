@@ -137,7 +137,8 @@ private:
 		* that they equal index. 
 		* 
 		* There is a ternary that returns the index to replace with, handling
-		* the incident if there is no left node.
+		* the incident if there is no left node. We can then use copyNode 
+		* recursively to overwrite the tree.
 		*/
 
 		if (maxLeft != minRight) { 
@@ -154,6 +155,10 @@ private:
 
 	void copyNode(int source, int destination, 
 		const BinarySearchTree& sourceTree = this) {
+
+		if (source == destination && sourceTree == this) {
+			return; //no useless overwriting
+		}
 		//copies node from source to destination
 		// destination is assumed to be this tree
 		//assumes dynmemory exists
