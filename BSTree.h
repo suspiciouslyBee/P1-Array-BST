@@ -82,18 +82,19 @@ private:
 
 	void remove(int index) {
 		/*
-		*deletes itself, and calls itself for their
-		* children. must keep in mind it will be creating duplicates
-		* needs to find the direct sucessor/predecessor first
-		* function is "dumb"; assumes the index actually exists
+		* Removes a "subject" node and replaces it as needed with a predecessor
+		* or sucessor. This helper function is "dumb" and assumes that the
+		* subject node exists. Use with caution.
 		*/
 
 
 		//DETERMINE INDEX LOCATION OF sucessor
-		int maxLeft = index*2; //max of left subtree
+		//We will start with the index for the left and right branch
+		int maxLeft = index*2; // subtree
 		int minRight = (index*2)+1; //left subtree
 		int parent = -1; // set to 0 as a fail safe (removing root?)
-
+		bool isRight = (index % 2 == 1);
+		int chosenNode = index;
 
 		if (index != 0){ //are we root?
 			//time to do some algorithmic bullcrap to mathematically determine
@@ -112,16 +113,51 @@ private:
 		}
 
 
-		//check if branches exist
-		if(root[index*2] != nullptr) { findMax(int maxLeft); }
-		if(root[(index * 2) + 1] != nullptr) { findMin(int minRight); }
+		//check if branches exist, grab the indexes for applicable max/min
+		//TODO: this isnt pretty :(
+		if(root[index*2] != nullptr) {
+			findMax(int maxLeft); 
+		}
+		else { //left node doesnt exist
+			maxLeft = index;
+		}
+
+		if(root[(index * 2) + 1] != nullptr) {
+			findMin(int minRight); 
+		}
+		else { //right node doesnt exist
+			minRight = index; 
+		}
 		
-		//we now have the locations of the direct sucessor maybe idk
 
 
+		/*
+		* The following code discreetly determines how many children the node
+		* has. By the program logic, if the min/max indices match, this means
+		* that they equal index. 
+		* 
+		* There is a ternary that returns the index to replace with, handling
+		* the incident if there is no left node.
+		*/
 
+		if (maxLeft != minRight) { 
+			chosenNode = (maxLeft == index) ? minRight : maxLeft;
+		}
 
+	
 
+		//we now have the locations of the direct sucessor, predecessor and 
+		//the node's parent
+
+		copyNode()
+	}
+
+	void copyNode(int source, int destination, 
+		const BinarySearchTree& sourceTree = this) {
+		//copies node from source to destination
+		// destination is assumed to be this tree
+		//assumes dynmemory exists
+		root[source] = sourceTree->root[destination];
 	}
 
 	const Pair* findMin(int index) {
@@ -130,6 +166,7 @@ private:
 		index = index * 2;
 		return findMin(index * 2 ); //go a level deeper
 	}
+
 	/*
 	const Pair* findPredecessor(int index, Pair& sucessor,
 		int localHeight = -1) {
