@@ -89,10 +89,28 @@ private:
 		*/
 
 
-
 		//DETERMINE INDEX LOCATION OF sucessor
 		int maxLeft = index*2; //max of left subtree
 		int minRight = (index*2)+1; //left subtree
+		int parent = -1; // set to 0 as a fail safe (removing root?)
+
+
+		if (index != 0){ //are we root?
+			//time to do some algorithmic bullcrap to mathematically determine
+			// the parent
+
+			parent = index; //copy our index
+
+			if (index % 2 == 1) { // our node is on the right?
+				parent -= 1; //subtract 1 
+			}
+
+			//now we can ascend the tree by removing a power of two
+
+			parent /= 2; //hehe 
+
+		}
+
 
 		//check if branches exist
 		if(root[index*2] != nullptr) { findMax(int maxLeft); }
@@ -112,7 +130,7 @@ private:
 		index = index * 2;
 		return findMin(index * 2 ); //go a level deeper
 	}
-
+	/*
 	const Pair* findPredecessor(int index, Pair& sucessor,
 		int localHeight = -1) {
 		/*
@@ -142,7 +160,7 @@ private:
 		* 
 		* 
 		*
-		*/
+		*
 
 		//First, determine the depth of the(sub)tree.
 		//The variable should be correct here
@@ -167,7 +185,8 @@ private:
 			return findPredecessor(index, sucessor, (localHeight - 1));
 		}
 
-	}
+	} 
+	*/
 	
 	const Pair* findMax(int index) {
 		//helper private to find max of a tree
