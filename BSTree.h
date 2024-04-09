@@ -82,19 +82,35 @@ private:
 
 	void remove(int index) {
 		/*
-		* Removes a "subject" node and replaces it as needed with a predecessor
-		* or sucessor. This helper function is "dumb" and assumes that the
-		* subject node exists. Use with caution.
+		* There is something special about this array, its an array of pointers
+		* We're going to take advantage of this. Instead of merely copying the
+		* data, we are going to actually reassign the pointers to potentially
+		* save on resources.
+		* 
+		* This is a dumb function that assumes whatever is calling it knows 
+		* what it's doing. Use with caution.
 		*/
 
+		Pair* subjectNode = root[index]; //store the current memory address
+		reassign(index);
+		delete subjectNode; //free this dyn mem
+	}
 
-		//DETERMINE INDEX LOCATION OF sucessor
-		//We will start with the index for the left and right branch
-		int maxLeft = index*2; // subtree
-		int minRight = (index*2)+1; //left subtree
-		int parent = -1; // set to 0 as a fail safe (removing root?)
+	void promote(int index) {
+		/*
+		* Promotes a node to a higher level, recursively checks for lower level
+		* DO NOT CALL ON ROOT.
+		*/
+
+		if (root[index] == nullptr) {
+			//if we have reached a leaf, we must then "free" the parent
+			return;
+		}
+
+		//Determine if we are on the left or right branch of the parent
+		//Then Determine Parent
 		bool isRight = (index % 2 == 1);
-		int chosenNode = index;
+		int parent = -1;
 
 		if (index != 0){ //are we root?
 			//time to do some algorithmic bullcrap to mathematically determine
@@ -112,57 +128,115 @@ private:
 
 		}
 
+		int promotion = parent + (int)isRight; //cast bc warnings bad >:( 
+		
+		/*
+		* we have our source, our destination.time to actually raise
+		* this will create a duplicate: we need to determine if the source has
+		* children too
+		*/
+		root[promotion] = root[index];
+		promote((index * 2)); //promote left node
+		promote((index * 2) + 1); //promote right node
+
+		
+		return;
+
+
+	}
+
+	void reassign(int index) {
+		/*
+		* Replaces a subject node recursively as needed with a predecessor
+		* or sucessor. This helper function is "dumb" and assumes that the
+		* subject node exists. Use with caution.
+		* 
+		*/
+
+
+		//DETERMINE INDEX LOCATION OF sucessor
+		//We will start with the index for the left and right branch
+		int maxLeft = index*2; // subtree
+		int minRight = (index*2)+1; //left subtree
+		int parent = -1; // set to 0 as a fail safe (removing root?)
+		bool isRight = (index % 2 == 1);
+		int chosenNode = index;
+		Pair* hopper = nullptr;
+
 
 		//check if branches exist, grab the indexes for applicable max/min
 		//TODO: this isnt pretty :(
-		if(root[index*2] != nullptr) {
-			findMax(int maxLeft); 
-		}
-		else { //left node doesnt exist
-			maxLeft = index;
-		}
-
-		if(root[(index * 2) + 1] != nullptr) {
-			findMin(int minRight); 
-		}
-		else { //right node doesnt exist
-			minRight = index; 
-		}
-		
-
 
 		/*
-		* The following code discreetly determines how many children the node
-		* has. By the program logic, if the min/max indices match, this means
-		* that they equal index. 
+		* We need to determine both if the right and left nodes even exist. If
+		* they do not, then we set it to index because of the implication that
+		* the root node is infact the smallest or greatest node in the subtree
 		* 
-		* There is a ternary that returns the index to replace with, handling
-		* the incident if there is no left node. We can then use copyNode 
-		* recursively to overwrite the tree.
+		* Should either branch exist
 		*/
 
-		if (maxLeft != minRight) { 
-			chosenNode = (maxLeft == index) ? minRight : maxLeft;
+		if(root[index*2] != nullptr) {
+			findMax(int maxLeft); 
+		} else if (root[(index * 2) + 1] != nullptr) { //left node doesnt exist
+			maxLeft = index;
+			findMin(int minRight);
+		}
+		else { //oh god this sucks so bad
+			maxLeft = minRight = index;
 		}
 
+		//we now know the direct sucessor and predecessor.
+
+
+		if (minRight == maxLeft == index) {
+			//we have no children on this subtree, there is nothing to reassign
+			//we simply need to reassign to null
+			root[index] = nullptr;
+			return;
+		}
+
+		/*
+		* The following code discreetly determines which node should suceed
+		* the reassigned node. There is a preference towards the predecessor
+		* here.
+		* 
+		* Reassigning a node with one child should be easy: shift up the child
+		* and its children a level
+		*/
+
+
+
+
+		//this is where we may need to recurse to
+		chosenNode = (maxLeft == index) ? minRight : maxLeft;
+		
+
+		hopper = root[chosenNode];
+		reassign(chosenNode); 
+		root[index] = hopper;
+	
 	
 
 		//we now have the locations of the direct sucessor, predecessor and 
 		//the node's parent
-
-		copyNode()
 	}
 
-	void copyNode(int source, int destination, 
-		const BinarySearchTree& sourceTree = this) {
+	void copyNode(int source, int destination) {
 
-		if (source == destination && sourceTree == this) {
+		if (source == destination) {
 			return; //no useless overwriting
 		}
 		//copies node from source to destination
 		// destination is assumed to be this tree
 		//assumes dynmemory exists
-		root[source] = sourceTree->root[destination];
+		root[desination] = root[source];
+	}
+
+	const Pair* findMax(int index) {
+		//helper private to find max of a tree
+		if (root[(index * 2)+1] == nullptr) { return root[index]; }
+		index = (index * 2) + 1;
+		return findMax((index * 2) + 1 ); //go a level deeper
 	}
 
 	const Pair* findMin(int index) {
@@ -230,12 +304,6 @@ private:
 	} 
 	*/
 	
-	const Pair* findMax(int index) {
-		//helper private to find max of a tree
-		if (root[(index * 2)+1] == nullptr) { return root[index]; }
-		index = (index * 2) + 1;
-		return findMax((index * 2) + 1 ); //go a level deeper
-	}
 
 	int navigate(int index, int count, bool deleteNodes) {
 		//recursively navigate to bottom of tree, incrementing an index
