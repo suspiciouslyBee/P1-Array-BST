@@ -43,13 +43,48 @@ private:
 	*/
 
 	Pair* *root;
-		
+	
+	//TODO: shrink to fit function, call during printTree
+
 	/*
 	* Prints the data of the trea in order based on key to the output stream
 	*/
 
+	void printTreeStructure(std::ostream& out) const {
+		/*
+		* First, we need to determine the total height of the(sub)tree
+		* The height is obtained by logging the size, truncating the decimal, then
+		* adding 1. This should work for any allocated size
+		*
+		* index is our (sub)root.
+		*/
+		int height = log(this->size) / log(2); //base change
+
+
+		int localHeight = -((log(index) / log(2)) - height);
+
+		//we now know the height and local height
+		int marginTabs = localHeight / 2;
+		for (int layer = 0; layer <= height; layer++) {
+			int i = marginTabs;
+			for (; i >= 0; i++) {
+				out << "\t";
+			}
+			for (i = 2 * pow(layer); i < 2 * pow(layer + 1); i++) {
+				out << root[i] << "\t";
+			}
+			out << endl;
+
+			marginTabs--;
+	
+		
+
+		//loop through margin tab
+	}	
+
 	void printTree(int index, std::ostream & out) const {
-		//  stub code: needs to be implemented
+		int count = 0;
+		navigate(index, count, false, out);
 	}
 
 	Pair* find(const KeyComparable& key, int index const) {
@@ -319,7 +354,8 @@ private:
 	*/
 	
 
-	int navigate(int index, int count, bool deleteNodes) {
+	int navigate(int index, int count, bool deleteNodes,
+		std::ostream& out == nullptr) {
 		//recursively navigate to bottom of tree, incrementing an index
 		//returns number of valid nodes encountered
 		//deletion flag deletes the child node before returning
@@ -331,6 +367,9 @@ private:
 		//check if children exist, then count *their* subtrees, report back.
 		if (root[index * 2] != nullptr) {
 			count += navigate(index * 2, count, deleteNodes);
+		}
+		if(out != nullptr) {//we are printing in order!
+			out << root[index] << " ";
 		}
 		if (root[(index * 2) + 1] != nullptr) { 
 			count += navigate((index * 2) + 1, count, deleteNodes);
@@ -344,11 +383,7 @@ private:
 
 	}
 
-	void lateralNavigate(int layer) {
-		//proof of concept to navigate across the same level
-		//assumes it starts on the very left side
-		//int anticipatedLeaves = 
-	}
+
 	void reallocate(int newSize) {
 		//reallocates to new size
 		Pair** newRoot = new Pair * [newSize];
@@ -431,8 +466,9 @@ public:
 	* Prints all the data from the tree in order based on key
 	*/
 	void printTree(std::ostream & out = cout) const {
+		out << "I'm printin the treeeeeee\n";
 		printTree(0 , out);
-		//  stub code: needs to be implemented
+		
 	}
 
 	/*
