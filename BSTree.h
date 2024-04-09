@@ -24,7 +24,7 @@ private:
 			////
 
 			Pair( KeyComparable & key, Value & value )
-				: value{ value },  key{ key }, depth{ 0 }
+				: value{ value },  key{ key }
 			{
 				// empty constructor...member initializer is doing all the work
 			}
@@ -32,10 +32,9 @@ private:
 	};   // end of Pair class
 
 	// number of values stored in the tree
-	int count = 0;
+	int count;
 	// capacity of array holding the tree
-	int size = 25;
-	int height = 0; //height of the tree before initialzing
+	int size;
 
 	/*
 	* The array that holds the pairs.
@@ -44,7 +43,7 @@ private:
 	* lives. The second pointer points to the start of the C array.
 	*/
 
-	Pair* *root = new Pair*[size];
+	Pair* *root;
 		
 	/*
 	* Prints the data of the trea in order based on key to the output stream
@@ -332,10 +331,10 @@ private:
 
 		//check if children exist, then count *their* subtrees, report back.
 		if (root[index * 2] != nullptr) {
-			this->count += navigate(index * 2, count, deleteNodes);
+			count += navigate(index * 2, count, deleteNodes);
 		}
 		if (root[(index * 2) + 1] != nullptr) { 
-			this->count += navigate((index * 2) + 1, count, deleteNodes);
+			count += navigate((index * 2) + 1, count, deleteNodes);
 		}
 
 
@@ -355,10 +354,14 @@ private:
 public:
 	BinarySearchTree() 	{
 		//  stub code: needs to be implemented
+		size = 25;
+		count = 0;
+		root = new Pair * [size];
 	}
 	
 	~BinarySearchTree() {
 		makeEmpty();
+		delete root;
 	}
 
 	/*
