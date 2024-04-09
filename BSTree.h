@@ -564,7 +564,8 @@ public:
 	int getCount() {
 		return this->count;
 	}
+	}
 
 
-
-};	// end of BinarySearchTree class
+};
+// end of BinarySearchTree class
