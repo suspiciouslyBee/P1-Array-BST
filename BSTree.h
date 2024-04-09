@@ -99,18 +99,14 @@ private:
 	void promote(int index) {
 		/*
 		* Promotes a node to a higher level, recursively checks for lower level
-		* DO NOT CALL ON ROOT.
+		* DO NOT CALL ON ROOT. Directly promotes, not smart
 		*/
 
-		if (root[index] == nullptr) {
-			//if we have reached a leaf, we must then "free" the parent
-			return;
-		}
-
+		
+		//Determine Parent
 		//Determine if we are on the left or right branch of the parent
-		//Then Determine Parent
-		bool isRight = (index % 2 == 1);
 		int parent = -1;
+
 
 		if (index != 0){ //are we root?
 			//time to do some algorithmic bullcrap to mathematically determine
@@ -128,10 +124,17 @@ private:
 
 		}
 
-		int promotion = parent + (int)isRight; //cast bc warnings bad >:( 
+		if (root[index] == nullptr) {
+			//if we have reached a leaf, we must then "free" the parent
+			root[parent] = nullptr;
+			return;
+		}
+		
+
+		int promotion = parent + (index % 2 == 1); 
 		
 		/*
-		* we have our source, our destination.time to actually raise
+		* we have our source, our destination, time to actually raise
 		* this will create a duplicate: we need to determine if the source has
 		* children too
 		*/
@@ -210,15 +213,28 @@ private:
 		//this is where we may need to recurse to
 		chosenNode = (maxLeft == index) ? minRight : maxLeft;
 		
+		if (maxLeft == index || minRight == index) {// one child
+			promote((minRight == index ? (index * 2) : ((index * 2) + 1));
+			return;
+		}
 
-		hopper = root[chosenNode];
-		reassign(chosenNode); 
-		root[index] = hopper;
-	
-	
+		//next case, two children. luckily we already have maxleft and minright
+		
+		/*
+		* There are now two children. We already have the index for maxLeft,
+		* and for minRight. Because of BST properties, this means that the 
+		* index for both of these will have just 1 child.
+		* 
+		* This means that we recurse down to the chosenNode after copying the
+		* pointer
+		*/
 
-		//we now have the locations of the direct sucessor, predecessor and 
-		//the node's parent
+
+		root[index] = root[chosenNode]; //move the ptr up
+		reassign(chosenNode); //promote the one child branch
+		return;
+
+
 	}
 
 	void copyNode(int source, int destination) {
