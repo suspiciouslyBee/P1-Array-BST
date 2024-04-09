@@ -15,7 +15,6 @@ private:
 		public:
 			KeyComparable key;
 			Value value;
-			int depth; //used for traversal
 			////
 			// Initialize class members from constructor arguments by using a 
 			// member initializer list. This method uses direct initialization,
@@ -350,6 +349,18 @@ private:
 		//assumes it starts on the very left side
 		//int anticipatedLeaves = 
 	}
+	void reallocate(int newSize) {
+		//reallocates to new size
+		Pair** newRoot = new Pair * [newSize];
+		for (int i = 1; i < this->size; i++) {
+			newRoot[i] = root[i];
+		}
+		delete root; //delete the ptr array
+		root = newRoot; //its now safe to assign root
+		this->size = newSize;
+		return;
+	}
+
 	
 public:
 	BinarySearchTree() 	{
@@ -443,7 +454,23 @@ public:
 	*     All nodes to the right will be greater
 	*/
 	bool insert( Value value,  KeyComparable key) 	{
-		//  stub code: needs to be implemented
+		/*
+		* Determine the index to insert to, if its a nullptr or greater than
+		* the size, hold onto the index. clone the list with the new index.
+		*/
+		int index = 1;
+
+		while (root[index] != nullptr) {
+			index = index * 2 + (key > root[index]);
+		}
+
+		if (index > this->size) {
+			reallocate(index);
+		}
+
+		root[index] = new Pair(key, value);
+
+
 		return false;
 	}
 
