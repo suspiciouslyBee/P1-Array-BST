@@ -332,9 +332,6 @@ private:
 		
 		 //we are here already, must be a valid node
 
-		if ((index * 2) + 1 == 107) {
-			std::cout << "breakpoint\n";
-		}
 
 		//check if children exist, then count *their* subtrees, report back.
 		if (root[index * 2] != nullptr && (index * 2) <= this->size ) {
@@ -578,9 +575,7 @@ public:
 		}
 
 		if (index > this->size) {
-			if (key == 11) {
-				std::cout << "breakpoint\n";
-			}
+
 			reallocate(index);
 		}
 
@@ -588,7 +583,6 @@ public:
 			std:cout << "AAAAAAAAAA\n";
 		}*/
 
-		std::cout << "INSERTING\n";
 		root[index] = new Pair(key, value);
 		this->count++;
 		return true;
