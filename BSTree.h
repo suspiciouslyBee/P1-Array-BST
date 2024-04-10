@@ -59,14 +59,14 @@ private:
 		//Internal function to find a pair
 		if (key == root[index]->key) { return root[index]; } //if a match
 
-		if (key > root[index]->key) {
+		if (key < root[index]->key) {
 			if (root[index*2]) { //check left
 				index = index * 2; //set to left
 				return find(key, index); //call itself again
 			}
 		}
 
-		if (key < root[index]->key) { //check right
+		if (key > root[index]->key) { //check right
 			if (root[(index * 2) + 1]) {
 				index = (index * 2) + 1; // set to right
 				return find(key, index);
