@@ -74,7 +74,7 @@ private:
 				out << root[i] << "\t";
 			}
 			out << endl;
-
+		}
 			marginTabs--;
 	
 		
@@ -84,10 +84,10 @@ private:
 
 	void printTree(int index, std::ostream & out) const {
 		int count = 0;
-		navigate(index, count, false, out);
+		navigate(index, count, out);
 	}
 
-	Pair* find(const KeyComparable& key, int index const) {
+	Pair* find(const KeyComparable& key, int index) const {
 		//Internal function to find a pair
 		if (key == root[index]->key) { return root[index]; } //if a match
 
@@ -113,7 +113,7 @@ private:
 		return nullptr;
 	}
 
-	void remove(int index) {
+	void yeet(int index) {
 		/*
 		* There is something special about this array, its an array of pointers
 		* We're going to take advantage of this. Instead of merely copying the
@@ -212,10 +212,10 @@ private:
 		*/
 
 		if(root[index*2] != nullptr) {
-			findMax(int maxLeft); 
+			findMax(maxLeft); 
 		} else if (root[(index * 2) + 1] != nullptr) { //left node doesnt exist
 			maxLeft = index;
-			findMin(int minRight);
+			findMin(minRight);
 		}
 		else { //oh god this sucks so bad
 			maxLeft = minRight = index;
@@ -247,7 +247,7 @@ private:
 		chosenNode = (maxLeft == index) ? minRight : maxLeft;
 		
 		if (maxLeft == index || minRight == index) {// one child
-			promote((minRight == index ? (index * 2) : ((index * 2) + 1));
+			promote((minRight == index ? (index * 2) : ((index * 2) + 1)));
 			return;
 		}
 
@@ -281,19 +281,21 @@ private:
 		root[desination] = root[source];
 	}
 
-	const Pair* findMax(int index) {
+	const Pair* findMax(int index) const {
 		//helper private to find max of a tree
 		if (root[(index * 2)+1] == nullptr) { return root[index]; }
 		index = (index * 2) + 1;
 		return findMax((index * 2) + 1 ); //go a level deeper
 	}
 
-	const Pair* findMin(int index) {
+	 const Pair* findMin(int index) const {
 		//helper private to find minimum of a tree recursively
 		if (root[index * 2] == nullptr) { return root[index]; }
 		index = index * 2;
 		return findMin(index * 2 ); //go a level deeper
 	}
+
+	//Note to self. RETURNS A POINTER TO A PAIR
 
 	/*
 	const Pair* findPredecessor(int index, Pair& sucessor,
@@ -354,8 +356,8 @@ private:
 	*/
 	
 
-	int navigate(int index, int count, bool deleteNodes,
-		std::ostream& out == nullptr) {
+	int navigate(int index, int count,
+		std::ostream& out ) const {
 		//recursively navigate to bottom of tree, incrementing an index
 		//returns number of valid nodes encountered
 		//deletion flag deletes the child node before returning
@@ -366,10 +368,30 @@ private:
 
 		//check if children exist, then count *their* subtrees, report back.
 		if (root[index * 2] != nullptr) {
-			count += navigate(index * 2, count, deleteNodes);
+			count += navigate(index * 2, count, out);
 		}
-		if(out != nullptr) {//we are printing in order!
 			out << root[index] << " ";
+		if (root[(index * 2) + 1] != nullptr) { 
+			count += navigate((index * 2) + 1, count, out);
+		}
+
+		return count; //ascend the total count to main or recursive parent
+
+	}
+	//overload without ostream
+	int navigate(int index, int count, bool deleteNodes) {
+		//recursively navigate to bottom of tree, incrementing an index
+		//returns number of valid nodes encountered
+		//deletion flag deletes the child node before returning
+		//assumes tree is not empty
+		//this is not a safe function
+		
+		count++; //we are here already, must be a valid node
+
+
+		//check if children exist, then count *their* subtrees, report back.
+		if (root[index * 2] != nullptr) {
+			count += navigate(index * 2, count, deleteNodes);
 		}
 		if (root[(index * 2) + 1] != nullptr) { 
 			count += navigate((index * 2) + 1, count, deleteNodes);
@@ -377,7 +399,7 @@ private:
 
 
 
-		if (deleteNode) { delete root[index]; } //delete before we leave
+		if (deleteNodes) { delete root[index]; } //delete before we leave
 
 		return count; //ascend the total count to main or recursive parent
 
@@ -414,14 +436,18 @@ public:
 	* Finds the node with the smallest element in the tree	
 	*/
 	const Value findMin() const {
-		return findMin(1)->value;
+		int index = 1;
+		return findMin(index)->value;
 	}
 
 	/*
 	* Finds the node with the largest element in the tree
 	*/
 	const Value findMax() const {
-		return findMax(1)->value;
+		//when templatized value becomes computerscientist pointer
+
+		int index = 1;
+		return findMax(index)->value;
 	}
 
 	void findMan() {
@@ -438,7 +464,7 @@ public:
 	bool find(const KeyComparable & argKey , Value & founditem) const 	{
 		int index = 1;
 	
-		if (find(const KeyComparable & key, int index const) == nullptr) {
+		if (find(argKey,index) == nullptr) {
 			return false; 
 		}
 		
@@ -497,7 +523,7 @@ public:
 		int index = 1;
 
 		while (root[index] != nullptr) {
-			index = index * 2 + (key > root[index]);
+			index = index * 2 + (key > root[index]->key);
 		}
 
 		if (index > this->size) {
@@ -517,7 +543,7 @@ public:
 	void remove(const KeyComparable & key) 	{
 		//PHASE 1: Identify a match
 		int index = 1;
-		if (find(const KeyComparable & key, int index const) == nullptr) {
+		if (find(key, index) == nullptr) {
 			return; //no match
 		}
 
@@ -526,7 +552,7 @@ public:
 		//then we need to "promote" the children after killing the specific
 		// node
 
-		remove(index);
+		yeet(index); //compiler was screaming when i had this as remove()
 
 
 	}
@@ -563,7 +589,6 @@ public:
 
 	int getCount() {
 		return this->count;
-	}
 	}
 
 
