@@ -55,10 +55,14 @@ int main() {
 		tree2.insert(list[i], list[i]->getID());
 	}
 
+
 	cout << "\n\nPRINTING TREE:\n";
 	tree2.printTree();
 	cout << "Tree2 count: " << tree2.getCount() << endl;
 	cout << "Tree2 size: " << tree2.getSize() << endl << endl;
+
+	//tree2.printTreeStructure(cout);
+
 
 	//for (int i = 101; i <= 110; ++i) {		// for turn-in uncomment these lines
 	//	tree2.remove(i);
@@ -84,6 +88,8 @@ int main() {
 	tree.printTree();
 	cout << "Tree count: " << tree.getCount() << endl;
 	cout << "Tree size: " << tree.getSize() << endl << endl;
+
+	
 
 	ComputerScientist* find;
 	if (tree.find(80, find))

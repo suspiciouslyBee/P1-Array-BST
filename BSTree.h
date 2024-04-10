@@ -50,38 +50,6 @@ private:
 	* Prints the data of the trea in order based on key to the output stream
 	*/
 
-	void printTreeStructure(std::ostream& out) const {
-		/*
-		* First, we need to determine the total height of the(sub)tree
-		* The height is obtained by logging the size, truncating the decimal, then
-		* adding 1. This should work for any allocated size
-		*
-		* index is our (sub)root.
-		*/
-		int height = log(this->size) / log(2); //base change
-
-
-		int localHeight = -((log(index) / log(2)) - height);
-
-		//we now know the height and local height
-		int marginTabs = localHeight / 2;
-		for (int layer = 0; layer <= height; layer++) {
-			int i = marginTabs;
-			for (; i >= 0; i++) {
-				out << "\t";
-			}
-			for (i = 2 * pow(layer); i < 2 * pow(layer + 1); i++) {
-				out << root[i] << "\t";
-			}
-			out << endl;
-		}
-			marginTabs--;
-	
-		
-
-		//loop through margin tab
-	}	
-
 	void printTree(int index, std::ostream & out) const {
 		int count = 0;
 		navigate(index, count, out);
@@ -354,25 +322,32 @@ private:
 
 	} 
 	*/
-	
 
-	int navigate(int index, int count,
-		std::ostream& out ) const {
+
+	int navigate(int index, int count, std::ostream& out ) const {
 		//recursively navigate to bottom of tree, incrementing an index
 		//returns number of valid nodes encountered
 		//deletion flag deletes the child node before returning
 		//assumes tree is not empty
 		
-		count++; //we are here already, must be a valid node
+		 //we are here already, must be a valid node
 
+		if ((index * 2) + 1 == 107) {
+			std::cout << "breakpoint\n";
+		}
 
 		//check if children exist, then count *their* subtrees, report back.
-		if (root[index * 2] != nullptr) {
+		if (root[index * 2] != nullptr && (index * 2) <= this->size ) {
 			count += navigate(index * 2, count, out);
+			count++;
 		}
-			out << root[index] << " ";
-		if (root[(index * 2) + 1] != nullptr) { 
+
+		out << *(root[index]->value) << endl;
+
+		if (root[(index * 2) + 1] != nullptr 
+			&& ((index * 2) + 1) <= this->size) {
 			count += navigate((index * 2) + 1, count, out);
+			count++;
 		}
 
 		return count; //ascend the total count to main or recursive parent
@@ -390,11 +365,15 @@ private:
 
 
 		//check if children exist, then count *their* subtrees, report back.
-		if (root[index * 2] != nullptr) {
+		if (root[index * 2] != nullptr && (index * 2) < this->size) {
 			count += navigate(index * 2, count, deleteNodes);
+			count++;
 		}
-		if (root[(index * 2) + 1] != nullptr) { 
+
+		if (root[(index * 2) + 1] != nullptr
+			&& ((index * 2) + 1) < this->size) {
 			count += navigate((index * 2) + 1, count, deleteNodes);
+			count++;
 		}
 
 
@@ -407,11 +386,23 @@ private:
 
 
 	void reallocate(int newSize) {
-		//reallocates to new size
-		Pair** newRoot = new Pair * [newSize];
-		for (int i = 1; i < this->size; i++) {
+		//reallocates to new size, copies over, fills rest with nullptr
+		int i = 0;
+		Pair** newRoot = new Pair *[(newSize + 1)];
+
+		//fill newarray with nullptr
+		for (; i <= newSize; i++) {
+			newRoot[i] = nullptr;
+		}
+
+
+		for (i = 0; i <= this->size; i++) {
 			newRoot[i] = root[i];
 		}
+
+
+
+
 		delete root; //delete the ptr array
 		root = newRoot; //its now safe to assign root
 		this->size = newSize;
@@ -424,13 +415,49 @@ public:
 		//  stub code: needs to be implemented
 		size = 25;
 		count = 0;
-		root = new Pair * [size];
+		root = new Pair *[(size+1)];
+		for (int i = 0; i <= this->size; i++) {
+			root[i] = nullptr;
+		}
 	}
 	
 	~BinarySearchTree() {
 		makeEmpty();
 		delete root;
 	}
+
+	void printTreeStructure(std::ostream& out) const {
+		/*
+		* First, we need to determine the total height of the(sub)tree
+		* The height is obtained by logging the size, truncating the decimal, then
+		* adding 1. This should work for any allocated size
+		*
+		* index is our (sub)root.
+		*/
+		int height = log(this->size) / log(2); //base change
+
+		// int localHeight = -((log(index) / log(2)) - height);
+
+		//we now know the height and local height
+		int marginTabs = height / 2;
+		for (int layer = 0; layer <= height; layer++) {
+			int i = marginTabs;
+			for (; i >= 0; i--) {
+				out << "\t";
+			}
+			for (i = pow(2, layer); i < 2 * pow(2, layer + 1); i++) {
+				if (root[i] != nullptr) {
+				out << root[i]->key << "\t";
+				}
+			}
+			out << endl;
+		}
+			marginTabs--;
+	
+		
+
+		//loop through margin tab
+	}	
 
 	/*
 	* Finds the node with the smallest element in the tree	
@@ -493,7 +520,7 @@ public:
 	*/
 	void printTree(std::ostream & out = cout) const {
 		out << "I'm printin the treeeeeee\n";
-		printTree(0 , out);
+		printTree(1 , out);
 		
 	}
 
@@ -520,20 +547,51 @@ public:
 		* Determine the index to insert to, if its a nullptr or greater than
 		* the size, hold onto the index. clone the list with the new index.
 		*/
+
+		//this is where we start
 		int index = 1;
 
-		while (root[index] != nullptr) {
-			index = index * 2 + (key > root[index]->key);
+
+		//are we inbounds?
+		while (root[index] != nullptr && index <= this->size) {
+
+			if (root[index]->key == key) {
+				std::cout << "DUPLICATE BLOCKED\n";
+				return false;
+			}
+		
+			//mini navigate
+			//note to self
+			//go right (greater than -> index * 2 + 1
+			//go left -> index *2
+			/*if (key > root[index]->key) {
+				std::cout << key << " IS GREATER THAN " << root[index]->key
+					<< " ... Moving Right\n";
+			}
+			else {
+				std::cout << key << " IS LESS THAN " << root[index]->key
+					<< " ... Moving LEFT\n";
+			}
+			*/
+			index = (index * 2) + (key > root[index]->key);
+
 		}
 
 		if (index > this->size) {
+			if (key == 11) {
+				std::cout << "breakpoint\n";
+			}
 			reallocate(index);
 		}
 
+		/*if (key == 10) {
+			std:cout << "AAAAAAAAAA\n";
+		}*/
+
+		std::cout << "INSERTING\n";
 		root[index] = new Pair(key, value);
-
-
-		return false;
+		this->count++;
+		return true;
 	}
 
 	/*
