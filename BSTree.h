@@ -52,10 +52,12 @@ private:
 
 	void printTree(int index, std::ostream & out) const {
 		int count = 0;
+		int returnIndex = index;
+
 		navigate(index, count, out);
 	}
 
-	Pair* find(const KeyComparable& key, int index) const {
+	Pair* find(const KeyComparable& key, int &index) const {
 		//Internal function to find a pair
 		if (key == root[index]->key) { return root[index]; } //if a match
 
@@ -333,16 +335,22 @@ private:
 		 //we are here already, must be a valid node
 
 
+		if (root[index] == nullptr) {
+			cout << "WHOOPSIE\n";
+		}
+
 		//check if children exist, then count *their* subtrees, report back.
-		if (root[index * 2] != nullptr && (index * 2) <= this->size ) {
+		if (((index * 2) <= this->size ) && (root[index * 2] != nullptr)) {
 			count += navigate(index * 2, count, out);
 			count++;
 		}
 
+	
+
 		out << *(root[index]->value) << endl;
 
-		if (root[(index * 2) + 1] != nullptr 
-			&& ((index * 2) + 1) <= this->size) {
+		if ((((index * 2) + 1) <= this->size) 
+			&& (root[(index * 2) + 1] != nullptr)) {
 			count += navigate((index * 2) + 1, count, out);
 			count++;
 		}
@@ -382,8 +390,10 @@ private:
 	}
 
 
+
 	void reallocate(int newSize) {
 		//reallocates to new size, copies over, fills rest with nullptr
+		
 		int i = 0;
 		Pair** newRoot = new Pair *[(newSize + 1)];
 

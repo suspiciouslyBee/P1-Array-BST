@@ -46,9 +46,9 @@ int main() {
 
 	// Uncomment later try the different files out
 	//vector<ComputerScientist*> list = load("csList.txt");
-	vector<ComputerScientist*> list = load("csListSmall.txt");
+	//vector<ComputerScientist*> list = load("csListSmall.txt");
 	BinarySearchTree<int, ComputerScientist*> tree2;
-	//vector<ComputerScientist*> list = load("csListMed.txt"); // use this file for turn-in
+	vector<ComputerScientist*> list = load("csListMed.txt"); // use this file for turn-in
 	for (int i = 0; i < list.size(); i++)
 	{
 		cout << * list[i] << endl;					// remove later;  temporarily inserted to prove there is data
@@ -64,14 +64,14 @@ int main() {
 	//tree2.printTreeStructure(cout);
 
 
-	//for (int i = 101; i <= 110; ++i) {		// for turn-in uncomment these lines
-	//	tree2.remove(i);
-	//}
+	for (int i = 101; i <= 110; ++i) {		// for turn-in uncomment these lines
+		tree2.remove(i);
+	}
 
-	//cout << "\n\nPRINTING TREE AFTER REMOVING 101-110:\n";  // for turn-in uncomment these lines
-	//tree2.printTree();
-	//cout << "Tree2 count: " << tree2.getCount() << endl;
-	//cout << "Tree2 size: " << tree2.getSize() << endl << endl;
+	cout << "\n\nPRINTING TREE AFTER REMOVING 101-110:\n";  // for turn-in uncomment these lines
+	tree2.printTree();
+	cout << "Tree2 count: " << tree2.getCount() << endl;
+	cout << "Tree2 size: " << tree2.getSize() << endl << endl;
 
 	BinarySearchTree<int, ComputerScientist*> tree;
 	tree.insert(new ComputerScientist("Robert", "Ward", "Education", 50), 50);
