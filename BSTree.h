@@ -190,18 +190,20 @@ private:
 		* Should either branch exist
 		*/
 
-		if (root[index * 2] != nullptr) {
+		if (maxLeft <= this->size
+			&& root[index * 2] != nullptr) {
 			findMax(maxLeft);
 		}
-		else if (root[(index * 2) + 1] != nullptr) { //left node doesnt exist
+		else if (minRight <= this->size
+			&& root[(index * 2) + 1] != nullptr) { //left node doesnt exist
 			maxLeft = index;
 			findMin(minRight);
 		}
 		else { //oh god this sucks so bad
-			maxLeft = minRight = index;
+			maxLeft = minRight = index; //indicator that we have no children
 		}
 
-		//we now know the direct sucessor and predecessor.
+		//we now know the direct sucessor and predecessor. (or lack there of)
 
 
 		if (minRight == maxLeft == index) {
@@ -227,7 +229,7 @@ private:
 		chosenNode = (maxLeft == index) ? minRight : maxLeft;
 
 		if (maxLeft == index || minRight == index) {// one child
-			promote((minRight == index ? (index * 2) : ((index * 2) + 1)));
+			promote((minRight == index) ? (index * 2) : ((index * 2) + 1));
 			return;
 		}
 
