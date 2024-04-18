@@ -82,7 +82,7 @@ private:
 
 		return nullptr;
 	}
-	void promote(int index) {
+	void promote(int index, bool& toRight const) {
 		/*
 		* Promotes a node to a higher level, recursively checks for lower level
 		* DO NOT CALL ON ROOT. Directly promotes, not smart
@@ -92,38 +92,72 @@ private:
 		* This should ONLY be called on an internal node that:
 		* - Has a parent (NOT ROOT)
 		* - Has one or no children
+		*
+		* bool is important and will not be changed, it must be passed verbatim
+		* this guides the "direction" of the promotion
 		*/
-		
+
 
 
 		//Determine Parent
-		
+
+
+
 
 		if (index <= 0) {
 			std::cout << "Cannot Promote Invalid Index!\n";
 			exit(index);
 		}
-		bool isRight = ((index % 2) == 1);
+		/*
+		* since the parent is stored as some power of 2, we can bitshift
+		* indiscriminately to grab the index, it will auto discard the LSB in
+		* the process, which is what we would have done anyways, saving some
+		* resources.
+		*
+		* we then need to determine "chirality" (stole this word from a friend)
+		* then compare it with the direction we are trying to move, we have to
+		* do some screwery
+		*
+		* moving up right, but our node is on the right: after shift, sub 1
+		*
+		* moving up left
+		*
+		*/
+
+		//garbage that will be calculated every recursion to get a quick and
+		// dirty orientation. we need to know 
+
+		int parent = (index >> 1);
+		bool LSB = (index & 1);
+
+		//the god dAMN BOOLEAN LOGIC that i thought i wouldnt get to use or 
+		//figure out 
+		bool flow = (!toRight && LSB) || (toRight && !LSB);
+		int flowRoute = toRight ? 1 : -1;
 
 
-		//time to do some algorithmic bullcrap to mathematically determine
-		// the parent
-
-		int parent = index; //copy our index
-
-		if (isRight) { // our node is on the right?
-			parent -= 1; //subtract 1 
+		if (flow) {
+			flowRoute = 0;
 		}
 
-		//now we can ascend the tree by removing a power of two
+		int promotion = parent;
+		promotion += flowRoute;
 
-		parent /= 2; //hehe 
+
+
+
+		/*
+		* if statements suck, but i need something working
+		*/
+
+
+		
+		
+
 
 
 		//writes itself to the parent or it's sibling
 
-		int promotion = parent;
-		
 
 		if ((index > this->size) || (root[index] == nullptr)) {
 			//if we have reached beyond a leaf, we must then "free" the parent
@@ -142,8 +176,8 @@ private:
 		* this will create a duplicate: we need to determine if the source has
 		* children too
 		*/
-		promote((index * 2)); //promote left node
-		promote((index * 2) + 1); //promote right node
+		promote((index << 1)); //promote left node
+		promote((index << 1) + 1); //promote right node
 
 
 		return;
@@ -199,20 +233,35 @@ private:
 		*/
 
 		if (maxLeft <= this->size
-			&& root[index * 2] != nullptr) {
+			&& root[index << 1] != nullptr) {
 			findMax(maxLeft);
+
+			if ((maxLeft << 1) + 1 > this->size
+				|| root[(maxLeft << 1)] == nullptr) {
+				root[maxLeft] = nullptr;
+				return;
+			}
+
 		}
 		else if (minRight <= this->size
-			&& root[(index * 2) + 1] != nullptr) { //left node doesnt exist
+			&& root[(index << 1) + 1] != nullptr) { //left node doesnt exist
 			maxLeft = index;
 			findMin(minRight);
+
+
+			//check for children
+
+			if (((minRight << 1) + 1) > this->size
+				|| root[(minRight << 1) + 1] == nullptr) {
+				root[minRight] = nullptr;
+				return;
+			}
 		}
 		else { //oh god this sucks so bad
 			maxLeft = minRight = index; //indicator that we have no children
 		}
 
-		//we now know the direct sucessor and predecessor. (or lack there of)
-
+		//check for no children
 
 		if (minRight == maxLeft == index) {
 			//we have no children on this subtree, there is nothing to reassign
@@ -220,6 +269,13 @@ private:
 			root[index] = nullptr;
 			return;
 		}
+
+
+
+		//we now know the direct sucessor and predecessor. (or lack there of)
+
+
+
 
 		/*
 		* The following code discreetly determines which node should suceed
@@ -234,37 +290,29 @@ private:
 		/*
 		* This ternary operation determines if a predecessor exists. If it does
 		* exist, we will keep a note on the index for the predecessor. Else,
-		* we will store the index for the sucessor instead. We have code 
-		* earlier that checks if both do not exist (i.e. theyre both equal to 
+		* we will store the index for the sucessor instead. We have code
+		* earlier that checks if both do not exist (i.e. theyre both equal to
 		* index), so we can assume that these will both be different.
-		* 
+		*
 		* Because the functions *should* have returned a valid index, we have
-		* no need for yet another OOB check. Hopefully. Ergo, we can also, as a 
+		* no need for yet another OOB check. Hopefully. Ergo, we can also, as a
 		* precaution,  store the actual memory address of the chosen Pair.
-		* 
+		*
 		* In more readable language:
 		* 1. Determine the predecessor or sucessor's index and if it exists
 		*	1a. If they DO NOT EXIST, we have no child.
 		*		Set the index in question to nullptr
 		* 2. Store the memory address contained at root[pred/succ's index]
 		* 3. If we have one child (as would be the case if node is a pred/succ)
-		* Then we need to 
+		* Then we need to
 		*/
 
-		if (maxLeft == index || minRight == index) {
-
-			//active node has just one child, we need to promote that child
-
-			promote((minRight == index) ? (index * 2) : ((index * 2) + 1));
-
-			return;
-		}
+		//minRight and maxLeft will have one child by definition
 
 		chosenNode = (maxLeft == index) ? minRight : maxLeft;
-		hopper = root[chosenNode];
-
-
-		reassign(chosenNode); 
+		hopper = root[chosenNode]; //we need to save this
+		bool toRight = (chosenNode & 1);
+		promote((chosenNode << 1) + (int)toRight), toRight);
 
 
 		//next case, two children. luckily we already have maxleft and minright
@@ -298,9 +346,9 @@ private:
 
 	const Pair* findMax(int index) const {
 		//helper private to find max of a tree
-		if ((((index * 2) + 1) > this->size) 
+		if ((((index * 2) + 1) > this->size)
 			|| root[(index * 2) + 1] == nullptr) {
-			return root[index]; 
+			return root[index];
 		}
 		index = (index * 2) + 1;
 		return findMax((index * 2) + 1); //go a level deeper
@@ -309,8 +357,8 @@ private:
 	const Pair* findMin(int index) const {
 		//helper private to find minimum of a tree recursively
 		if (((index * 2) > this->size)
-			||root[index * 2] == nullptr) {
-			return root[index]; 
+			|| root[index * 2] == nullptr) {
+			return root[index];
 		}
 		index = index * 2;
 		return findMin(index * 2); //go a level deeper
