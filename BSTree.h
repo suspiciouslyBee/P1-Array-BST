@@ -82,7 +82,7 @@ private:
 
 		return nullptr;
 	}
-	void promote(int index, bool& toRight const) {
+	void promote(int index, const bool& toRight) {
 		/*
 		* Promotes a node to a higher level, recursively checks for lower level
 		* DO NOT CALL ON ROOT. Directly promotes, not smart
@@ -176,8 +176,8 @@ private:
 		* this will create a duplicate: we need to determine if the source has
 		* children too
 		*/
-		promote((index << 1)); //promote left node
-		promote((index << 1) + 1); //promote right node
+		promote((index << 1), toRight); //promote left node
+		promote((index << 1) + 1, toRight); //promote right node
 
 
 		return;
@@ -209,6 +209,7 @@ private:
 		* subject node exists. Use with caution.
 		*
 		*/
+
 
 
 		//DETERMINE INDEX LOCATION OF sucessor
@@ -312,7 +313,7 @@ private:
 		chosenNode = (maxLeft == index) ? minRight : maxLeft;
 		hopper = root[chosenNode]; //we need to save this
 		bool toRight = (chosenNode & 1);
-		promote((chosenNode << 1) + (int)toRight), toRight);
+		promote((chosenNode << 1) + (int)toRight, toRight);
 
 
 		//next case, two children. luckily we already have maxleft and minright
@@ -327,7 +328,7 @@ private:
 		*/
 
 
-		root[index] = root[chosenNode]; //move the ptr up
+		root[index] = hopper; //move the ptr up
 		return;
 
 
