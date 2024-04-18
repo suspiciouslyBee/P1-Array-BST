@@ -602,7 +602,7 @@ public:
 			cachedSize >> 1;
 		}
 
-		//we 
+		//we now know layers.
 
 
 
