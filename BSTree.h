@@ -53,13 +53,20 @@ private:
 	void printTree(int index, std::ostream& out) const {
 		int count = 0;
 		int returnIndex = index;
-
 		navigate(index, count, out);
 	}
 
 	Pair* find(const KeyComparable& key, int& index) const {
 		//Internal function to find a pair
+
+		if ((root[index] == nullptr) || (index > this->size) ) {
+			return nullptr;
+		}
+
 		if (key == root[index]->key) { return root[index]; } //if a match
+		
+	
+
 
 		if (key < root[index]->key) {
 			if (root[index * 2]) { //check left
@@ -83,6 +90,10 @@ private:
 		return nullptr;
 	}
 	void promote(int index, const bool& toRight) {
+
+		if (index == 1135) {
+			std::cout << "AAAAAAAAAA\n";
+		}
 		/*
 		* Promotes a node to a higher level, recursively checks for lower level
 		* DO NOT CALL ON ROOT. Directly promotes, not smart
@@ -167,9 +178,12 @@ private:
 		else {
 			//if root[index] has something, we need to promote it!
 
-			root[promotion] = root[index];
-		}
 
+
+
+			
+		}
+		root[promotion] = root[index];
 
 		/*
 		* we have our source, our destination, time to actually raise
@@ -196,10 +210,21 @@ private:
 		* what it's doing. Use with caution.
 		*/
 
+		if (root[index]->key == -572662307) {
+			std::cout << "Funky Business, wtf is this!?\n";
+		}
+		if (index == 1135) {
+			std::cout << "AAAAAAAAAA\n";
+		}
+
+
 		Pair* subjectNode = root[index]; //store the current memory address
 		reassign(index);
 		delete subjectNode; //free this dyn mem
+		subjectNode = nullptr;
+		this->count--;
 	}
+
 
 
 	void reassign(int index) {
@@ -217,7 +242,7 @@ private:
 		int maxLeft = index * 2; // subtree
 		int minRight = (index * 2) + 1; //left subtree
 		int parent = -1; // set to 0 as a fail safe (removing root?)
-		bool isRight = (index % 2 == 1);
+		bool isRight = (index & 1);
 		int chosenNode = index;
 		Pair* hopper = nullptr;
 
@@ -233,18 +258,14 @@ private:
 		* Should either branch exist
 		*/
 
-		if (maxLeft <= this->size
-			&& root[index << 1] != nullptr) {
+		if ((index << 1) <= this->size
+			&& root[(index << 1)] != nullptr) {
 			findMax(maxLeft);
 
-			if ((maxLeft << 1) + 1 > this->size
-				|| root[(maxLeft << 1)] == nullptr) {
-				root[maxLeft] = nullptr;
-				return;
-			}
+
 
 		}
-		else if (minRight <= this->size
+		else if (((index << 1) + 1) <= this->size
 			&& root[(index << 1) + 1] != nullptr) { //left node doesnt exist
 			maxLeft = index;
 			findMin(minRight);
@@ -252,26 +273,36 @@ private:
 
 			//check for children
 
-			if (((minRight << 1) + 1) > this->size
-				|| root[(minRight << 1) + 1] == nullptr) {
-				root[minRight] = nullptr;
-				return;
-			}
 		}
 		else { //oh god this sucks so bad
 			maxLeft = minRight = index; //indicator that we have no children
 		}
 
+		/*
+		if (((minRight << 1) + 1) > this->size
+			|| root[(minRight << 1) + 1] == nullptr) {
+			root[index] = root[minRight];
+			root[minRight] = nullptr;
+			return;
+		}
+		if ((maxLeft << 1) > this->size
+			|| root[(maxLeft << 1)] == nullptr) {
+			root[index] = root[maxLeft];
+			root[maxLeft] = nullptr;
+			return;
+		}*/
 		//check for no children
 
-		if (minRight == maxLeft == index) {
+		if ((minRight == index) && (maxLeft == index)) {
 			//we have no children on this subtree, there is nothing to reassign
 			//we simply need to reassign to null
 			root[index] = nullptr;
 			return;
 		}
 
-
+		if (root[index]->key == -572662307) {
+			std::cout << "Funky Business, wtf is this!?\n";
+		}
 
 		//we now know the direct sucessor and predecessor. (or lack there of)
 
@@ -309,11 +340,16 @@ private:
 		*/
 
 		//minRight and maxLeft will have one child by definition
+		//ptr will get overwritten. we need to save it to put at local root
 
 		chosenNode = (maxLeft == index) ? minRight : maxLeft;
-		hopper = root[chosenNode]; //we need to save this
-		bool toRight = (chosenNode & 1);
-		promote((chosenNode << 1) + (int)toRight, toRight);
+
+		if (chosenNode >> 1 == index) {
+			chosenNode = (chosenNode << 1) + (chosenNode & 1);
+		}
+		hopper = root[chosenNode]; //we need to save this ptr,
+		bool upRight = !(chosenNode & 1);
+		promote((chosenNode), upRight);
 
 
 		//next case, two children. luckily we already have maxleft and minright
@@ -533,6 +569,19 @@ public:
 		delete root;
 	}
 
+	void debugPrint() {
+		std::cout << "printing entire array, skipping nullptrs\n";
+		for (int i = 0; i <= this->size; i++) {
+
+			if (root[i] != nullptr) {
+				std::cout << i << ": " << root[i]->key;
+				if (root[i]->key < 0) {
+					std::cout << " Invalid Index, memory uninitialized!";
+				}
+				std::cout << endl;
+			}
+		}
+	}
 	void printTreeStructure(std::ostream& out) const {
 		/*
 		* First, we need to determine the total height of the(sub)tree
@@ -541,25 +590,21 @@ public:
 		*
 		* index is our (sub)root.
 		*/
-		int height = log(this->size) / log(2); //base change
+		
 
 		// int localHeight = -((log(index) / log(2)) - height);
 
-		//we now know the height and local height
-		int marginTabs = height / 2;
-		for (int layer = 0; layer <= height; layer++) {
-			int i = marginTabs;
-			for (; i >= 0; i--) {
-				out << "\t";
-			}
-			for (i = pow(2, layer); i < 2 * pow(2, layer + 1); i++) {
-				if (root[i] != nullptr) {
-					out << root[i]->key << "\t";
-				}
-			}
-			out << endl;
+		int i = 0;
+		int layer = 0;
+		int cachedSize = this->size;
+
+		for (layers = 0; cachedSize > 0; layers++) {
+			cachedSize >> 1;
 		}
-		marginTabs--;
+
+		//we 
+
+
 
 
 
@@ -660,7 +705,7 @@ public:
 
 
 		//are we inbounds?
-		while (root[index] != nullptr && index <= this->size) {
+		while ((index <= this->size) && (root[index] != nullptr)) {
 
 			if (root[index]->key == key) {
 				std::cout << "DUPLICATE BLOCKED\n";
