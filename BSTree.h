@@ -1,6 +1,20 @@
 ﻿#include "BSTInterface.h"
 #include <string>
 
+////
+// 
+// Programmer: June
+// 
+// File: Tree class implemenation
+// 
+//
+// Basic array based BST with has a fully functional insert function that only 
+// adds in unique numbers, Can use ostream to print. Efficiently uses dynamic
+// memory.
+// 
+////
+
+
 
 using namespace std;
 template <typename KeyComparable, typename Value >
@@ -44,10 +58,8 @@ private:
 
 	Pair** root;
 
-	//TODO: shrink to fit function, call during printTree
-
 	/*
-	* Prints the data of the trea in order based on key to the output stream
+	* Prints the data of the tree in order based on key to the output stream
 	*/
 
 	void printTree(int index, std::ostream& out) const {
@@ -55,6 +67,8 @@ private:
 		int returnIndex = index;
 		navigate(index, count, out);
 	}
+
+
 
 	Pair* find(const KeyComparable& key, int& index) const {
 		//Internal function to find a pair
@@ -65,10 +79,6 @@ private:
 
 
 		if (key == root[index]->key) {
-
-			if (key == 104) {
-				std::cout << "AAAAAAAAA\n";
-			}
 			return root[index];
 		} //if a match
 
@@ -285,6 +295,8 @@ private:
 	}
 
 
+	//The code gets a bit hard to read here
+
 	const Pair* findMax(int index) const {
 		//helper private to find max of a tree
 		if ((((index * 2) + 1) > this->size)
@@ -294,6 +306,7 @@ private:
 		index = (index * 2) + 1;
 		return findMax((index * 2) + 1); //go a level deeper
 	}
+
 	const Pair* findMin(int index) const {
 		//helper private to find minimum of a tree recursively
 		if (((index * 2) > this->size)
@@ -363,6 +376,7 @@ private:
 		return count; //ascend the total count to main or recursive parent
 
 	}
+
 	//overload without ostream
 	int navigate(int index, int count, bool deleteNodes) {
 		//recursively navigate to bottom of tree, incrementing an index
@@ -424,7 +438,6 @@ private:
 
 public:
 	BinarySearchTree() {
-		//  stub code: needs to be implemented
 		size = 25;
 		count = 0;
 		root = new Pair * [(size + 1)];
@@ -436,6 +449,25 @@ public:
 	~BinarySearchTree() {
 		makeEmpty();
 		delete root;
+		root = nullptr;
+	}
+
+	BinarySearchTree(const BinarySearchTree& rhs) {
+		this->size = old.size;
+		this->count = old.count;
+		this->root = new Pair * [(old.size + 1)];
+		for (int i = 0; i <= old.size; i++) {
+			root[i] = old.root[i];
+		}
+		*this = rhs;
+	}
+
+	BinarySearchTree& operator=(const BinarySearchTree& rhs) {
+		if (this == *rhs) {	return *this;}
+		makeEmpty();
+		BinarySearchTree(rhs);
+
+		return *this;
 	}
 
 	void debugPrint() {
@@ -458,6 +490,8 @@ public:
 		* adding 1. This should work for any allocated size
 		*
 		* index is our (sub)root.
+		* 
+		* TODO: finish me
 		*/
 
 
@@ -547,15 +581,16 @@ public:
 	* Returns true if the item is found in the tree
 	*/
 	bool contains(const KeyComparable& argKey) const {
-		return false;
+		int i = 1;
+		return (find(argKey, i) != nullptr);
 	}
 
 	/*
 	* Returns true if tree has no nodes
 	*/
 	bool isEmpty() const {
-		//  stub code: needs to be implemented
-		return root == nullptr;
+		bool emptyForReal = (root == nullptr) && (this->count == 0);
+		return emptyForReal;
 	}
 
 	/*
@@ -571,11 +606,12 @@ public:
 	* Removes all nodes from the tree
 	*/
 	void makeEmpty() {
-		int index = 1;
-		this->count = 1; //set count to be extra sure
 		if (isEmpty()) { return; }
-
-		navigate(index, this->count, true);
+		for (int i = 0; i <= this->size; i++) {
+			if (root[i] != nullptr) {
+				delete root[i];
+			}
+		}
 		this->count = 0;
 	}
 
@@ -602,32 +638,13 @@ public:
 				std::cout << "DUPLICATE BLOCKED\n";
 				return false;
 			}
-
-			//mini navigate
-			//note to self
-			//go right (greater than -> index * 2 + 1
-			//go left -> index *2
-			/*if (key > root[index]->key) {
-				std::cout << key << " IS GREATER THAN " << root[index]->key
-					<< " ... Moving Right\n";
-			}
-			else {
-				std::cout << key << " IS LESS THAN " << root[index]->key
-					<< " ... Moving LEFT\n";
-			}
-			*/
 			index = (index * 2) + (key > root[index]->key);
-
 		}
 
 		if (index > this->size) {
 
 			reallocate(index);
 		}
-
-		/*if (key == 10) {
-			std:cout << "AAAAAAAAAA\n";
-		}*/
 
 		root[index] = new Pair(key, value);
 		this->count++;
