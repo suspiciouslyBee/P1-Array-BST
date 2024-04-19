@@ -1,4 +1,4 @@
-#include "BSTInterface.h"
+ï»¿#include "BSTInterface.h"
 #include <string>
 
 
@@ -53,13 +53,27 @@ private:
 	void printTree(int index, std::ostream& out) const {
 		int count = 0;
 		int returnIndex = index;
-
 		navigate(index, count, out);
 	}
 
 	Pair* find(const KeyComparable& key, int& index) const {
 		//Internal function to find a pair
-		if (key == root[index]->key) { return root[index]; } //if a match
+
+		if ((root[index] == nullptr) || (index > this->size)) {
+			return nullptr;
+		}
+
+
+		if (key == root[index]->key) {
+
+			if (key == 104) {
+				std::cout << "AAAAAAAAA\n";
+			}
+			return root[index];
+		} //if a match
+
+
+
 
 		if (key < root[index]->key) {
 			if (root[index * 2]) { //check left
@@ -82,6 +96,79 @@ private:
 
 		return nullptr;
 	}
+	void promote(int index, const bool& startingfromRight) {
+
+		/*
+		* Promotes a node to a higher level, recursively checks for lower level
+		* DO NOT CALL ON ROOT.
+		*/
+
+		if (index <= 0) {
+			std::cout << "Cannot Promote Invalid Index!\n";
+			exit(index);
+		}
+		/*
+		* since the parent is stored as some power of 2, we can bitshift
+		* indiscriminately to grab the index, it will auto discard the LSB in
+		* the process, which is what we would have done anyways, saving some
+		* resources.
+		*
+		* we then need to determine "chirality" (stole this word from a friend)
+		* then compare it with the direction we are trying to move, we have to
+		* do some screwery
+		*
+		* moving up right, but our node is on the right: after shift, sub 1
+		*
+		* moving up left
+		*
+		*/
+
+
+		//garbage that will be calculated every recursion to get a quick and
+		// dirty orientation. we need to know 
+
+		int parent = (index >> 1);
+		bool LSB = (index & 1);
+		int flow = 0;
+		int promotion = parent;
+		Pair* keepSake = nullptr;
+
+		//this code calculates if we need to be a sibling of the parent
+
+		if (startingfromRight && !LSB) {
+			//if we are moving a left from lower left 
+			//if theyre odd (root is from right), but we're not (left node)
+			flow = -1;
+		}
+		else if (!startingfromRight && LSB) {
+			flow = 1;
+		}
+
+		//we can now get the direct index to go to
+		promotion += flow;
+
+		//can assume promotion is addressable because it is a lower power of 2
+
+		if ((index > this->size) || (root[index] == nullptr)) {
+			//If the index doesn't exist, set parent to nullptr and leave
+			root[promotion] = nullptr;
+			return;
+		}
+		else {
+			keepSake = root[index];
+		}
+
+		promote((index << 1), startingfromRight); //promote left node
+		promote((index << 1) + 1, startingfromRight); //promote right node
+
+
+
+		root[promotion] = keepSake;
+
+		return;
+
+
+	}
 
 	void yeet(int index) {
 		/*
@@ -97,68 +184,11 @@ private:
 		Pair* subjectNode = root[index]; //store the current memory address
 		reassign(index);
 		delete subjectNode; //free this dyn mem
+		subjectNode = nullptr;
+		this->count--;
 	}
 
-	void promote(int index) {
-		/*
-		* Promotes a node to a higher level, recursively checks for lower level
-		* DO NOT CALL ON ROOT. Directly promotes, not smart
-		* This is only called for deleting nodes with one child, it attempts
-		* to use arithmatic to determine the new location of the single child
-		*
-		* This should ONLY be called on an internal node that:
-		* - Has a parent (NOT ROOT)
-		* - Has one or no children
-		*/
 
-
-		//Determine Parent
-		
-
-		if (index <= 0) {
-			std::cout << "Cannot Promote Invalid Index!\n";
-			exit(index);
-		}
-
-
-
-		//time to do some algorithmic bullcrap to mathematically determine
-		// the parent
-
-		int parent = index; //copy our index
-
-		if ((index % 2) == 1) { // our node is on the right?
-			parent -= 1; //subtract 1 
-		}
-
-		//now we can ascend the tree by removing a power of two
-
-		parent /= 2; //hehe 
-
-
-		if ((index <= this->size) || (root[index] == nullptr)) {
-			//if we have reached a leaf, we must then "free" the parent
-			root[parent] = nullptr;
-			return;
-		}
-
-
-		int promotion = parent + (index % 2 == 1);
-
-		/*
-		* we have our source, our destination, time to actually raise
-		* this will create a duplicate: we need to determine if the source has
-		* children too
-		*/
-		root[promotion] = root[index];
-		promote((index * 2)); //promote left node
-		promote((index * 2) + 1); //promote right node
-
-
-		return;
-
-
-	}
 
 	void reassign(int index) {
 		/*
@@ -167,179 +197,138 @@ private:
 		* subject node exists. Use with caution.
 		*
 		*/
+		//is this dumb? maybe
+		//this reps a node that doesnt exist for clarity: a placeholder
+
+		constexpr int nodeDNE = -5000;
 
 
-		//DETERMINE INDEX LOCATION OF sucessor
-		//We will start with the index for the left and right branch
-		int maxLeft = index * 2; // subtree
-		int minRight = (index * 2) + 1; //left subtree
-		int parent = -1; // set to 0 as a fail safe (removing root?)
-		bool isRight = (index % 2 == 1);
-		int chosenNode = index;
+
+		//DETERMINE INDEX LOCATION OF predecessor
+
+
+		int maxLeft = nodeDNE;
+		int minRight = nodeDNE;
+		int parent = nodeDNE;
+		int chosenNode = nodeDNE;
+
+
+		int leftNode = (index << 1);
+		int rightNode = (index << 1) + 1;
+
+		bool parentfromRight = false;
+
+		//test Right and Left
+		if (leftNode > this->size || root[leftNode] == nullptr) {
+			leftNode = nodeDNE;
+		}
+		if (rightNode > this->size || root[rightNode] == nullptr) {
+			rightNode = nodeDNE;
+		}
+
+
+
 		Pair* hopper = nullptr;
 
 
 		//check if branches exist, grab the indexes for applicable max/min
-		//TODO: this isnt pretty :(
 
-		/*
-		* We need to determine both if the right and left nodes even exist. If
-		* they do not, then we set it to index because of the implication that
-		* the root node is infact the smallest or greatest node in the subtree
-		*
-		* Should either branch exist
-		*/
-
-		if (root[index * 2] != nullptr) {
-			findMax(maxLeft);
+		if (leftNode > 0) {
+			maxLeft = findMaxIndex(leftNode);
 		}
-		else if (root[(index * 2) + 1] != nullptr) { //left node doesnt exist
-			maxLeft = index;
-			findMin(minRight);
+		else if (rightNode > 0) { //left node doesnt exist
+			minRight = findMinIndex(rightNode);
 		}
-		else { //oh god this sucks so bad
-			maxLeft = minRight = index;
-		}
-
-		//we now know the direct sucessor and predecessor.
-
-
-		if (minRight == maxLeft == index) {
-			//we have no children on this subtree, there is nothing to reassign
-			//we simply need to reassign to null
+		else {
+			//no children
 			root[index] = nullptr;
 			return;
 		}
 
-		/*
-		* The following code discreetly determines which node should suceed
-		* the reassigned node. There is a preference towards the predecessor
-		* here.
-		*
-		* Reassigning a node with one child should be easy: shift up the child
-		* and its children a level
-		*/
+		if (maxLeft != nodeDNE) {
+			chosenNode = maxLeft;
 
-
-
-
-		//this is where we may need to recurse to
-		chosenNode = (maxLeft == index) ? minRight : maxLeft;
-
-		if (maxLeft == index || minRight == index) {// one child
-			promote((minRight == index ? (index * 2) : ((index * 2) + 1)));
-			return;
+			parentfromRight = false;
+		}
+		else {
+			chosenNode = minRight;
+			parentfromRight = true;
 		}
 
-		//next case, two children. luckily we already have maxleft and minright
+		//we now know the direct sucessor or predecessor's exact location
+		//get a backup of the ptr so we dont lose it
 
-		/*
-		* There are now two children. We already have the index for maxLeft,
-		* and for minRight. Because of BST properties, this means that the
-		* index for both of these will have just 1 child.
-		*
-		* This means that we recurse down to the chosenNode after copying the
-		* pointer
-		*/
+		hopper = root[chosenNode];
 
+		//we now want to navigate to the succ/pred node's only child
+		//remember, LSB: 0 -> left, 1 -> right
+		//so in this case, if we are on the right, go left. vice versa
 
-		root[index] = root[chosenNode]; //move the ptr up
-		reassign(chosenNode); //promote the one child branch
+		if (!parentfromRight) {
+			chosenNode = (chosenNode << 1);
+		}
+		else {
+			chosenNode = (chosenNode << 1) + 1;
+		}
+
+		//now, we want to "promote" that child and all decendants to the next
+		//layer up
+
+		promote(chosenNode, parentfromRight);
+
+		// our current node is overwritten now, its time to push the saved ptr
+		root[index] = hopper;
+
 		return;
 
 
 	}
 
-	void copyNode(int source, int destination) {
-
-		if (source == destination) {
-			return; //no useless overwriting
-		}
-		//copies node from source to destination
-		// destination is assumed to be this tree
-		//assumes dynmemory exists
-		root[desination] = root[source];
-	}
 
 	const Pair* findMax(int index) const {
 		//helper private to find max of a tree
-		if ((((index * 2) + 1) > this->size) 
+		if ((((index * 2) + 1) > this->size)
 			|| root[(index * 2) + 1] == nullptr) {
-			return root[index]; 
+			return root[index];
 		}
 		index = (index * 2) + 1;
 		return findMax((index * 2) + 1); //go a level deeper
 	}
-
 	const Pair* findMin(int index) const {
 		//helper private to find minimum of a tree recursively
 		if (((index * 2) > this->size)
-			||root[index * 2] == nullptr) {
-			return root[index]; 
+			|| root[index * 2] == nullptr) {
+			return root[index];
 		}
 		index = index * 2;
-		return findMin(index * 2); //go a level deeper
+		return findMin(index); //go a level deeper
+
+	}
+
+	//same thing but gives me an index
+	int findMaxIndex(int index) {
+		//helper private to find max of a tree
+		if ((((index * 2) + 1) > this->size)
+			|| root[(index * 2) + 1] == nullptr) {
+			return index;
+		}
+		index = (index * 2) + 1;
+		return findMaxIndex(index); //go a level deeper
+	}
+
+	
+	int findMinIndex(int index) {
+		//helper private to find minimum of a tree recursively
+		if (((index * 2) > this->size)
+			|| root[index * 2] == nullptr) {
+			return index;
+		}
+		index = index * 2;
+		return findMinIndex(index); //go a level deeper
 	}
 
 	//Note to self. RETURNS A POINTER TO A PAIR
 
-	/*
-	const Pair* findPredecessor(int index, Pair& sucessor,
-		int localHeight = -1) {
-		/*
-		* proof of concept that uses the hashmap-like structure of array BST
-		* finds the direct sucessor/predecessor to a given node
-		* sucessor will get assigned to the direct sucessor
-		*
-		* if the function returns the same address contained at index, there is
-		* no predecessor
-		*
-		* sucessor expects to be set to root on initial run
-		*
-		* Since this is tricky here is an explanation of the patterns:
-		* 1. The depth of the tree signifies the power of 2 that each layer has
-		* in common
-		* 2. In a layer, the corresponding window for each leaf is 2^(depth)
-		* This can be extrapolated locally:
-		*
-		* 3. Each subtree has a "window" of 2^(depth) * index
-		*
-		* These properties creates a line of symmetry at the root node for the
-		* tree or subtree between the predesessor/sucessor, this can be used to
-		* find the predecessor with less recursion.
-		*
-		* If the node that would be the immediate precesssor/sucesssor is empty
-		* , then we need to ascend a level to test the line of symmetry there
-		*
-		*
-		*
-		*
-
-		//First, determine the depth of the(sub)tree.
-		//The variable should be correct here
-		if (localHeight == -1) { //if this wasnt overridden
-			localHeight = this->height - root[index].depth;
-		}
-		int localMin = this->index * pow(2, localHeight - 1);
-		//any higher and it rolls over to the next local min, so using this:
-		int localMax = localMin + pow(2, localHeight - 1) - 1;
-
-		//we now have the essentials to have the computer visualize the subtree
-		//we need to test the axis of symmetry for the lowest level and rise
-
-		if (root[localMax] == nullptr) { //check end
-			findPredecessor(index, sucessor, (localHeight - 1) );
-		}
-		//the local max does exist WAIT SHIT DAMNIT I WAS DOING IT WRONG
-
-
-
-		if (root[localMin] == nullptr) {
-			return findPredecessor(index, sucessor, (localHeight - 1));
-		}
-
-	}
-	*/
 
 
 	int navigate(int index, int count, std::ostream& out) const {
@@ -435,7 +424,7 @@ private:
 
 public:
 	BinarySearchTree() {
-		//  stub code: needs to be implemented
+		//Â  stub code: needs to be implemented
 		size = 25;
 		count = 0;
 		root = new Pair * [(size + 1)];
@@ -449,6 +438,19 @@ public:
 		delete root;
 	}
 
+	void debugPrint() {
+		std::cout << "printing entire array, skipping nullptrs\n";
+		for (int i = 0; i <= this->size; i++) {
+
+			if (root[i] != nullptr) {
+				std::cout << i << ": " << root[i]->key;
+				if (root[i]->key < 0) {
+					std::cout << " Invalid Index, memory uninitialized!";
+				}
+				std::cout << endl;
+			}
+		}
+	}
 	void printTreeStructure(std::ostream& out) const {
 		/*
 		* First, we need to determine the total height of the(sub)tree
@@ -457,26 +459,44 @@ public:
 		*
 		* index is our (sub)root.
 		*/
-		int height = log(this->size) / log(2); //base change
+
 
 		// int localHeight = -((log(index) / log(2)) - height);
 
-		//we now know the height and local height
-		int marginTabs = height / 2;
-		for (int layer = 0; layer <= height; layer++) {
-			int i = marginTabs;
-			for (; i >= 0; i--) {
-				out << "\t";
-			}
-			for (i = pow(2, layer); i < 2 * pow(2, layer + 1); i++) {
-				if (root[i] != nullptr) {
-					out << root[i]->key << "\t";
-				}
-			}
-			out << endl;
-		}
-		marginTabs--;
+		int i = 0;
+		int layer = 0;
+		int cachedSize = this->size;
 
+		for (layer = 0; cachedSize > 0; layer++) {
+			cachedSize >> 1;
+		}
+
+		//we now know layers.
+
+		int localKey = 0;
+
+		while (layer > 0) {
+
+
+
+			if (index > this->size) {
+				localKey = -2;
+			}
+			else if (root[index] == nullptr) {
+				localKey = -1;
+			}
+			else {
+				localKey = root[index]->key;
+			}
+
+			for (i = 0; i <= layers; i++) {
+				out << "   ";
+			}
+			out << setw(6) << localKey;
+
+
+
+		}
 
 
 		//loop through margin tab
@@ -534,7 +554,7 @@ public:
 	* Returns true if tree has no nodes
 	*/
 	bool isEmpty() const {
-		//  stub code: needs to be implemented
+		//Â  stub code: needs to be implemented
 		return root == nullptr;
 	}
 
@@ -576,7 +596,7 @@ public:
 
 
 		//are we inbounds?
-		while (root[index] != nullptr && index <= this->size) {
+		while ((index <= this->size) && (root[index] != nullptr)) {
 
 			if (root[index]->key == key) {
 				std::cout << "DUPLICATE BLOCKED\n";
