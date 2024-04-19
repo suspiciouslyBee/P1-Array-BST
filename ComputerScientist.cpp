@@ -1,6 +1,8 @@
 #include <iostream>
 #include "ComputerScientist.h"
 
+//Instructor Provided example class for BST unit test
+
 
 ostream& operator << (ostream &out, const ComputerScientist &ComputerScientist) {
 	// Since operator << is a friend of the ComputerScientist class, we can access
