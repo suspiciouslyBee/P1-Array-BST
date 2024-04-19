@@ -1,6 +1,14 @@
 ﻿// BSTStartProject.cpp : Defines the entry point for the console application.
 //
 
+////
+// Part of Array Based BSTree.
+// Programmer: June
+// Instructor provided unit test for BSTree, tests construction, manipulation, 
+// and destruction.
+////
+
+
 #include "BSTree.h"
 #include "ComputerScientist.h"
 #include <string>
